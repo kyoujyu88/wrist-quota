@@ -5,14 +5,35 @@
 
 ## 技術スタック
 
-実装言語は未確定（Go の単一実行ファイルが候補。ユーザーの承認は未取得）。確定したらこの表を更新する。
-
-| レイヤー | 技術 | 状態 |
+| レイヤー | 技術 | 備考 |
 |---|---|---|
-| 集計・常駐アプリ | 未確定（候補: Go） | 未着手 |
-| 設定画面 | ローカル Web UI（127.0.0.1） | 未着手 |
-| 通知経路 | ntfy（既定は公開サーバー、自前サーバーも指定可） | ドキュメント確認済み・実送信は未実施 |
-| 対応 OS | Windows / macOS / Linux | — |
+| 言語 | Go 1.27.1 | 単一実行ファイル。外部ライブラリは使っていない（標準ライブラリのみ） |
+| 設定画面 | 素の HTML・CSS・JavaScript | ビルド工程なし。`embed` で実行ファイルに同梱 |
+| 通知経路 | ntfy（既定 `https://ntfy.sh`） | JSON 送信。ドキュメント確認済み・実送信は未実施 |
+| 保存 | JSON ファイル | 設定ディレクトリ配下。データベースなし |
+| 対応 OS | Windows / macOS / Linux | Linux で動作確認。Windows・macOS はビルドのみ確認 |
+
+## ビルドとテスト
+
+```bash
+go build ./cmd/wrist-quota
+go test ./...
+go vet ./...
+GOOS=windows GOARCH=amd64 go build ./cmd/wrist-quota   # クロスビルド
+```
+
+## 実行時のファイルとポート
+
+| 項目 | 値 |
+|---|---|
+| 設定ディレクトリ | `os.UserConfigDir()/wrist-quota`（Linux: `~/.config/wrist-quota`）。`WRIST_QUOTA_HOME` で変更可 |
+| `config.json` | 通知先・ルール・プロバイダの設定、ステータスライン登録の記録 |
+| `state.json` | 最新の観測値、通知済みの記録、送信履歴 |
+| `claudecode.json` | `statusline` サブコマンドが書く Claude Code の観測値 |
+| `claude-settings.backup.json` | ステータスライン登録前の Claude Code 設定の退避 |
+| 設定画面 | `127.0.0.1:47821` と `[::1]:47821`（`config.json` の `listen` で変更可。ループバック以外は拒否） |
+
+ファイルは本人だけが読み書きできる権限（ディレクトリ 0700、ファイル 0600）で作る。
 
 ## 開発マシン
 
@@ -28,13 +49,14 @@
 | git | 2.43.0 |
 | gh | 2.45.0（`kyoujyu88` でログイン済み） |
 | Python | 3.12.3 |
+| Go | 1.27.1（`~/.local/go` にユーザー単位で導入。`~/.profile` で PATH に追加） |
 | Docker | 29.8.2 |
 | Claude Code CLI | 2.1.291（`~/.local/bin/claude`） |
 | tmux | 導入済み（M0 のサンプル採取に使用） |
 
 ## 未導入（必要になった時点で導入）
 
-- Go / Node.js（npm, pnpm）/ uv / cargo — いずれも PATH 上に無い。実装言語の確定後に導入する。
+- Node.js（npm, pnpm）/ uv / cargo — PATH 上に無い。このプロジェクトでは不要。
 - ntfy CLI — 未導入。送信は HTTP POST だけで足りるため必須ではない。
 - Codex CLI — PATH 上に無い。ただし `~/.codex/sessions/2026/` にセッションログは存在する（M0 のサンプル採取に利用可）。
 

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="wq-token" content="{{token}}">
+<title>wrist-quota</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>wrist-quota</h1>
+  <nav id="tabs">
+    <button data-tab="dashboard" class="active">ダッシュボード</button>
+    <button data-tab="rules">通知ルール</button>
+    <button data-tab="destination">通知先</button>
+    <button data-tab="providers">プロバイダ</button>
+    <button data-tab="history">履歴</button>
+  </nav>
+</header>
+
+<p id="message" role="status" hidden></p>
+
+<main>
+  <section id="dashboard">
+    <div id="windows" class="cards"></div>
+    <p id="no-windows" class="hint" hidden>まだ利用枠を観測していません。「プロバイダ」で取得状況を確認してください。</p>
+    <p class="hint" id="sent-today"></p>
+  </section>
+
+  <section id="rules" hidden>
+    <p class="hint">使える変数: <code>{provider}</code> <code>{window}</code> <code>{remaining}</code> <code>{used}</code> <code>{resets_in}</code> <code>{resets_at}</code>。ウォッチの画面は狭いので、要点はタイトルの先頭に置いてください。</p>
+    <div id="rule-list"></div>
+    <div class="actions">
+      <button id="add-threshold">しきい値ルールを追加</button>
+      <button id="add-reset">リセットルールを追加</button>
+      <button id="save-rules" class="primary">ルールを保存</button>
+    </div>
+  </section>
+
+  <section id="destination" hidden>
+    <form id="destination-form">
+      <label>サーバー URL
+        <input name="server" type="url" required>
+      </label>
+      <label>トピック名
+        <input name="topic" required pattern="[-_A-Za-z0-9]{1,64}" autocomplete="off" spellcheck="false">
+      </label>
+      <p class="warn" id="topic-weak" hidden>このトピック名は短いか推測しやすい名前です。名前を知っていれば誰でも購読・投稿できるため、再生成をおすすめします。</p>
+      <label>アクセストークン（自前サーバー用・任意）
+        <input name="token" type="password" autocomplete="off" placeholder="変更しない場合は空のまま">
+      </label>
+      <p class="hint" id="token-state"></p>
+      <div class="actions">
+        <button type="submit" class="primary">通知先を保存</button>
+        <button type="button" id="regenerate">トピック名を再生成</button>
+        <button type="button" id="test-send">テスト送信</button>
+        <button type="button" id="clear-token" hidden>トークンを削除</button>
+      </div>
+    </form>
+    <h2>スマートフォンで購読する</h2>
+    <p class="hint">ntfy アプリで次のトピックを購読してください。トピック名はパスワードと同じ扱いにしてください。</p>
+    <p><code id="subscribe-url"></code></p>
+  </section>
+
+  <section id="providers" hidden>
+    <div id="provider-list" class="cards"></div>
+    <h2>Claude Code のステータスライン</h2>
+    <p class="hint">Claude Code の利用枠は、ステータスライン用コマンドとして登録すると取得できます。既存のステータスラインがある場合は、その表示をそのまま引き継ぎます。</p>
+    <p id="statusline-state"></p>
+    <div class="actions">
+      <button id="statusline-install" class="primary">ステータスラインに登録</button>
+      <button id="statusline-uninstall">登録を解除</button>
+    </div>
+  </section>
+
+  <section id="history" hidden>
+    <table>
+      <thead><tr><th>日時</th><th>種類</th><th>内容</th><th>結果</th></tr></thead>
+      <tbody id="history-rows"></tbody>
+    </table>
+    <p id="no-history" class="hint" hidden>まだ通知を送っていません。</p>
+  </section>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>
